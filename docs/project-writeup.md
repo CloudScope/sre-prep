@@ -4,7 +4,7 @@
 
 ![Architecture: from commit to trace](images/architecture.svg)
 
-## TL;DR
+## Project overview
 
 I built a small but production-shaped reliability platform on a local Kubernetes cluster: an OpenTelemetry-instrumented service, metrics and traces flowing through an OTel Collector, SLOs with multi-window burn-rate alerts, and the whole stack managed by Argo CD from Git.
 
