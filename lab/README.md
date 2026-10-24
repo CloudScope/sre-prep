@@ -73,3 +73,11 @@ kubectl -n demo       delete secret -l owner=helm,name=podinfo
 kubectl -n argocd     delete secret -l owner=helm,name=argocd
 helm list -A                                    # should be empty
 ```
+
+Seen during the cutover: when Argo CD adopted the `PrometheusRule`, Prometheus reloaded
+its rules and the 5-minute `orders-api-slo-budget` group started writing each result one
+interval in the past (first a `duplicate sample for timestamp` error, then results that
+were always 5m old, so instant queries for `slo:error_budget_remaining:ratio` came back
+empty). Deleting the Prometheus pod fixed it. Use `kubectl delete pod`, not
+`kubectl rollout restart`: the restart annotation is a spec change that Argo CD
+self-heal would revert, causing a second restart.
