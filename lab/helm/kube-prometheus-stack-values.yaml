@@ -34,3 +34,10 @@ prometheus:
 grafana:
   # Lab-only placeholder. Do not reuse outside the local cluster.
   adminPassword: admin
+  # View traces in Grafana Explore alongside Prometheus metrics.
+  additionalDataSources:
+    - name: Jaeger
+      type: jaeger
+      uid: jaeger
+      access: proxy
+      url: http://jaeger.monitoring.svc:16686

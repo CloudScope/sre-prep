@@ -2,7 +2,8 @@
 # Single gateway collector for the kind lab.
 #   OTLP in (gRPC 4317, HTTP 4318)
 #   metrics -> prometheus exporter :8889 -> scraped by kube-prometheus-stack
-#   traces, logs -> debug exporter (collector stdout) until a trace backend is added
+#   traces  -> Jaeger (OTLP gRPC, jaeger.monitoring.svc:4317)
+#   logs    -> debug exporter (collector stdout); no log backend yet
 
 mode: deployment
 replicaCount: 1
@@ -62,6 +63,10 @@ config:
     prometheus:
       endpoint: ${env:MY_POD_IP}:8889
       send_timestamps: true
+    otlp/jaeger:
+      endpoint: jaeger.monitoring.svc:4317
+      tls:
+        insecure: true   # in-cluster lab traffic; use TLS/mTLS in production
   service:
     pipelines:
       metrics:
@@ -71,7 +76,7 @@ config:
       traces:
         receivers: [otlp]
         processors: [memory_limiter, k8sattributes, batch]
-        exporters: [debug]
+        exporters: [otlp/jaeger]
       logs:
         receivers: [otlp]
         processors: [memory_limiter, k8sattributes, batch]
