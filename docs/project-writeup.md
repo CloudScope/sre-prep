@@ -448,6 +448,15 @@ The 43-minute estimate was for the 1h tier alone. The 6h window still held earli
 
 Adding inventory-api behind orders-api turns every request into one trace across two services, and the trace alone shows which service failed.
 
+**What each service does.** The two services model a minimal online-shop backend:
+
+| Service | Role in the shop | Endpoint | Returns |
+| --- | --- | --- | --- |
+| orders-api | Customer-facing API: look up an order and its status. This is the user journey the SLOs protect | `GET /orders/{order_id}` | `{"order_id": 42, "status": "shipped"}` |
+| inventory-api | Internal backend: checks stock for the order's item. Customers never call it directly | `GET /inventory/{item_id}` | `{"item_id": 42, "in_stock": 100}` |
+
+Both are deliberately simple and simulated: the "database" calls are short random sleeps, and the data is generated. Their purpose is to produce realistic telemetry (traffic, latency, own failures and dependency failures) for practising SLOs, alerting and tracing, not to run a real shop.
+
 **How the two services link.** They share no code and no database; two things connect them:
 
 - **The network:** orders-api calls inventory-api by its Kubernetes Service name, `http://inventory-api:8000` (both run in the `demo` namespace; set by `INVENTORY_URL`). The Service load-balances across inventory-api pods.
