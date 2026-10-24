@@ -16,6 +16,8 @@ spec:
     automated:
       prune: true      # delete objects removed from Git
       selfHeal: true   # revert manual changes (kubectl edit/scale/set env)
+    syncOptions:
+      - CreateNamespace=true
     retry:
       limit: 3
       backoff:

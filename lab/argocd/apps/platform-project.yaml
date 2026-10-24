@@ -1,0 +1,27 @@
+# Platform components (monitoring stack, OTel Collector, Argo CD itself).
+# Unlike sre-lab these need cluster-scoped objects: CRDs, ClusterRoles, webhooks.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: platform
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "-1"
+spec:
+  description: Lab platform services
+  sourceRepos:
+    - https://github.com/CloudScope/sre-prep.git
+    - https://prometheus-community.github.io/helm-charts
+    - https://open-telemetry.github.io/opentelemetry-helm-charts
+    - https://argoproj.github.io/argo-helm
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: monitoring
+    - server: https://kubernetes.default.svc
+      namespace: argocd
+    # kube-prometheus-stack puts scrape Services for CoreDNS/kubelet in kube-system.
+    - server: https://kubernetes.default.svc
+      namespace: kube-system
+  clusterResourceWhitelist:
+    - group: "*"
+      kind: "*"

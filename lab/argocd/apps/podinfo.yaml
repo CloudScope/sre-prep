@@ -1,0 +1,36 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: podinfo
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: sre-lab
+  sources:
+    - repoURL: https://stefanprodan.github.io/podinfo
+      chart: podinfo
+      targetRevision: 6.15.0
+      helm:
+        releaseName: podinfo
+        valueFiles:
+          - $values/lab/helm/podinfo-values.yaml
+    - repoURL: https://github.com/CloudScope/sre-prep.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      - ServerSideApply=true
+      # ServiceMonitor/PrometheusRule CRDs come from kube-prometheus-stack;
+      # on a fresh cluster they may not exist yet, so retry until they do.
+      - SkipDryRunOnMissingResource=true
+    retry:
+      limit: 5
+      backoff: { duration: 10s, factor: 2, maxDuration: 3m }

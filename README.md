@@ -9,23 +9,27 @@ Interview preparation for a Senior SRE role: SLOs, observability with OpenTeleme
 
 ## Lab quick start
 
+Everything is managed by Argo CD from this repo (app of apps in `lab/argocd/`).
+Helm is only used once, to bootstrap Argo CD itself.
+
 ```bash
 kind create cluster --name local-k8s
 
-helm repo add prometheus-community https://prometheus-community.github.io/helm-charts
-helm repo add podinfo https://stefanprodan.github.io/podinfo
-helm repo add open-telemetry https://open-telemetry.github.io/opentelemetry-helm-charts
-helm repo update
+helm repo add argo https://argoproj.github.io/argo-helm
+helm install argocd argo/argo-cd --version 10.11.1 \
+  -n argocd --create-namespace -f lab/helm/argocd-values.yaml
 
-helm install monitoring prometheus-community/kube-prometheus-stack --version 92.11.0 \
-  -n monitoring --create-namespace -f lab/helm/kube-prometheus-stack-values.yaml
-helm install podinfo podinfo/podinfo --version 6.15.0 \
-  -n demo --create-namespace -f lab/helm/podinfo-values.yaml
-helm install otel open-telemetry/opentelemetry-collector --version 0.177.0 \
-  -n monitoring -f lab/helm/otel-collector-values.yaml
+kubectl apply -f lab/argocd/root.yaml
+```
 
-kubectl apply -k lab/apps/orders-api
-lab/slo/apply.sh
+Root then syncs: Argo CD (self-managed), kube-prometheus-stack, OTel Collector,
+podinfo, orders-api, and the orders-api SLO rules. To change anything, edit the
+values or manifests here and push.
+
+Argo CD:
+```bash
+kubectl -n argocd port-forward svc/argocd-server 8080:80   # http://localhost:8080, user admin
+kubectl -n argocd get secret argocd-initial-admin-secret -o jsonpath='{.data.password}' | base64 -d; echo
 ```
 
 Grafana:

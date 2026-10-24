@@ -1,0 +1,46 @@
+# Prometheus, Alertmanager, Grafana, Prometheus Operator and its CRDs.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: kube-prometheus-stack
+  namespace: argocd
+  annotations:
+    # CRDs (ServiceMonitor, PrometheusRule) must exist before apps that use them.
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: platform
+  sources:
+    - repoURL: https://prometheus-community.github.io/helm-charts
+      chart: kube-prometheus-stack
+      targetRevision: 92.11.0
+      helm:
+        releaseName: monitoring   # same as the original Helm release, so names match
+        valueFiles:
+          - $values/lab/helm/kube-prometheus-stack-values.yaml
+    - repoURL: https://github.com/CloudScope/sre-prep.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  # The admission webhook job injects its CA at runtime; don't treat that as drift.
+  ignoreDifferences:
+    - group: admissionregistration.k8s.io
+      kind: MutatingWebhookConfiguration
+      jqPathExpressions: [".webhooks[]?.clientConfig.caBundle"]
+    - group: admissionregistration.k8s.io
+      kind: ValidatingWebhookConfiguration
+      jqPathExpressions: [".webhooks[]?.clientConfig.caBundle"]
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+      # The Prometheus Operator CRDs exceed the 256KB last-applied annotation
+      # limit of client-side apply.
+      - ServerSideApply=true
+      - RespectIgnoreDifferences=true
+    retry:
+      limit: 5
+      backoff: { duration: 10s, factor: 2, maxDuration: 3m }

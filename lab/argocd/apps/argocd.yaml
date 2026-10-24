@@ -1,0 +1,33 @@
+# Argo CD manages itself. Upgrades and config changes go through Git like
+# everything else; the initial `helm install` was only the bootstrap.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: argocd
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "0"
+spec:
+  project: platform
+  sources:
+    - repoURL: https://argoproj.github.io/argo-helm
+      chart: argo-cd
+      targetRevision: 10.11.1
+      helm:
+        releaseName: argocd
+        valueFiles:
+          - $values/lab/helm/argocd-values.yaml
+    - repoURL: https://github.com/CloudScope/sre-prep.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      # No prune: a bad render must never delete Argo CD's own components.
+      # Remove stale objects by hand after reviewing them.
+      prune: false
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true

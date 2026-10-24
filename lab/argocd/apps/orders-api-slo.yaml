@@ -1,0 +1,29 @@
+# SLO recording + alerting rules (PrometheusRule rendered by lab/slo/render.sh).
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: orders-api-slo
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: platform
+  source:
+    repoURL: https://github.com/CloudScope/sre-prep.git
+    targetRevision: main
+    path: lab/slo/k8s
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      # ServiceMonitor/PrometheusRule CRDs come from kube-prometheus-stack;
+      # on a fresh cluster they may not exist yet, so retry until they do.
+      - SkipDryRunOnMissingResource=true
+    retry:
+      limit: 5
+      backoff: { duration: 10s, factor: 2, maxDuration: 3m }

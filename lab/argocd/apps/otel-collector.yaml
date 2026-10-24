@@ -1,0 +1,35 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: otel-collector
+  namespace: argocd
+  annotations:
+    argocd.argoproj.io/sync-wave: "1"
+spec:
+  project: platform
+  sources:
+    - repoURL: https://open-telemetry.github.io/opentelemetry-helm-charts
+      chart: opentelemetry-collector
+      targetRevision: 0.177.0
+      helm:
+        releaseName: otel
+        valueFiles:
+          - $values/lab/helm/otel-collector-values.yaml
+    - repoURL: https://github.com/CloudScope/sre-prep.git
+      targetRevision: main
+      ref: values
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: monitoring
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - ServerSideApply=true
+      # ServiceMonitor/PrometheusRule CRDs come from kube-prometheus-stack;
+      # on a fresh cluster they may not exist yet, so retry until they do.
+      - SkipDryRunOnMissingResource=true
+    retry:
+      limit: 5
+      backoff: { duration: 10s, factor: 2, maxDuration: 3m }
