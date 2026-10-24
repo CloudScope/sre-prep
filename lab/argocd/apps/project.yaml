@@ -5,6 +5,9 @@ kind: AppProject
 metadata:
   name: sre-lab
   namespace: argocd
+  annotations:
+    # Create the project before the Applications that reference it.
+    argocd.argoproj.io/sync-wave: "-1"
 spec:
   description: SRE prep lab workloads
   sourceRepos:
