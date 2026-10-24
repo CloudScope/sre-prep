@@ -1,6 +1,12 @@
 # sre-prep
 
-Interview preparation for a Senior SRE role: SLOs, observability with OpenTelemetry and Prometheus, incident management, Kubernetes, Terraform, and automation.
+A production-style SRE platform on Kubernetes: OpenTelemetry, Prometheus, Grafana, Jaeger, SLOs with multi-window burn-rate alerts, and everything deployed by Argo CD from this repo.
+
+**Read the full write-up: [docs/project-writeup.md](docs/project-writeup.md)**
+
+![Architecture: from commit to trace](docs/images/architecture.svg)
+
+The repo also tracks interview preparation for a Senior SRE role: SLOs, observability, incident management, Kubernetes, Terraform, and automation.
 
 - `PLAN.md`: the 14-day plan and progress checklist
 - `CLAUDE.md`: context for Claude Code sessions in this repo
