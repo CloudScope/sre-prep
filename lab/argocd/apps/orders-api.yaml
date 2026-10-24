@@ -1,0 +1,24 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: orders-api
+  namespace: argocd
+spec:
+  project: sre-lab
+  source:
+    repoURL: https://github.com/CloudScope/sre-prep.git
+    targetRevision: main
+    path: lab/apps/orders-api
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: demo
+  syncPolicy:
+    automated:
+      prune: true      # delete objects removed from Git
+      selfHeal: true   # revert manual changes (kubectl edit/scale/set env)
+    retry:
+      limit: 3
+      backoff:
+        duration: 10s
+        factor: 2
+        maxDuration: 1m

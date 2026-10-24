@@ -1,0 +1,6 @@
+# Chart: podinfo/podinfo 6.15.0
+replicaCount: 2
+
+serviceMonitor:
+  enabled: true
+  interval: 15s

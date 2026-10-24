@@ -1,0 +1,78 @@
+# Chart: open-telemetry/opentelemetry-collector 0.177.0 (collector v0.163.2)
+# Single gateway collector for the kind lab.
+#   OTLP in (gRPC 4317, HTTP 4318)
+#   metrics -> prometheus exporter :8889 -> scraped by kube-prometheus-stack
+#   traces, logs -> debug exporter (collector stdout) until a trace backend is added
+
+mode: deployment
+replicaCount: 1
+
+image:
+  # contrib is needed for the prometheus exporter and k8sattributes processor
+  repository: otel/opentelemetry-collector-contrib
+
+presets:
+  # Adds k8s.namespace.name, k8s.pod.name, k8s.deployment.name etc. to incoming telemetry.
+  kubernetesAttributes:
+    enabled: true
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 100m
+    memory: 128Mi
+
+ports:
+  # Only OTLP is used in this lab.
+  jaeger-compact:
+    enabled: false
+  jaeger-thrift:
+    enabled: false
+  jaeger-grpc:
+    enabled: false
+  zipkin:
+    enabled: false
+  # Collector's own telemetry (otelcol_* metrics).
+  metrics:
+    enabled: true
+  # Application metrics re-exposed for Prometheus.
+  prom-exporter:
+    enabled: true
+    containerPort: 8889
+    servicePort: 8889
+    protocol: TCP
+
+serviceMonitor:
+  enabled: true
+  metricsEndpoints:
+    - port: metrics
+      interval: 15s
+    - port: prom-exporter
+      interval: 15s
+
+config:
+  receivers:
+    jaeger: null
+    zipkin: null
+    # Self-scrape not needed; the ServiceMonitor scrapes :8888 directly.
+    prometheus: null
+  exporters:
+    prometheus:
+      endpoint: ${env:MY_POD_IP}:8889
+      send_timestamps: true
+  service:
+    pipelines:
+      metrics:
+        receivers: [otlp]
+        processors: [memory_limiter, k8sattributes, batch]
+        exporters: [prometheus]
+      traces:
+        receivers: [otlp]
+        processors: [memory_limiter, k8sattributes, batch]
+        exporters: [debug]
+      logs:
+        receivers: [otlp]
+        processors: [memory_limiter, k8sattributes, batch]
+        exporters: [debug]

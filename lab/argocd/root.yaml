@@ -1,0 +1,21 @@
+# App of apps. Bootstrap once with:
+#   kubectl apply -f lab/argocd/root.yaml
+# After that, add or change apps by committing to lab/argocd/apps/.
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: root
+  namespace: argocd
+spec:
+  project: default
+  source:
+    repoURL: https://github.com/CloudScope/sre-prep.git
+    targetRevision: main
+    path: lab/argocd/apps
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: argocd
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

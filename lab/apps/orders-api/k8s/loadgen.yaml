@@ -1,0 +1,34 @@
+# Steady background traffic (~5 req/s) so SLIs always have data.
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: orders-loadgen
+  labels:
+    app.kubernetes.io/name: orders-loadgen
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: orders-loadgen
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: orders-loadgen
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 100
+      containers:
+        - name: loadgen
+          image: curlimages/curl:8.11.1
+          command:
+            - sh
+            - -c
+            - |
+              while true; do
+                curl -s -o /dev/null -m 5 "http://orders-api:8000/orders/$(( $(od -An -N2 -tu2 /dev/urandom) % 1000 ))"
+                sleep 0.2
+              done
+          resources:
+            requests: { cpu: 10m, memory: 16Mi }
+            limits: { cpu: 100m, memory: 32Mi }

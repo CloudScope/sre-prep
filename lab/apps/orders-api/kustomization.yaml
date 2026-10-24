@@ -1,0 +1,13 @@
+# Deploy: kubectl apply -k lab/apps/orders-api
+# The app code ships in a ConfigMap so no image build is needed. The hash suffix
+# on the ConfigMap name makes pods roll whenever app.py or requirements.txt change.
+namespace: demo
+resources:
+  - k8s/deployment.yaml
+  - k8s/service.yaml
+  - k8s/loadgen.yaml
+configMapGenerator:
+  - name: orders-api-src
+    files:
+      - app.py
+      - requirements.txt

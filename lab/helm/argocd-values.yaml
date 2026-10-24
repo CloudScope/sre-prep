@@ -1,0 +1,29 @@
+# Chart: argo/argo-cd 10.11.1 (Argo CD v3.5.6)
+# Minimal single-replica install for the kind lab.
+
+configs:
+  params:
+    # Serve the UI over plain HTTP; we only reach it via kubectl port-forward.
+    server.insecure: true
+
+# No SSO in the lab; log in as admin.
+dex:
+  enabled: false
+
+# Expose Argo CD's own metrics to kube-prometheus-stack
+# (argocd_app_info sync/health status, reconcile and sync durations, repo-server git timings).
+controller:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+server:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true
+repoServer:
+  metrics:
+    enabled: true
+    serviceMonitor:
+      enabled: true

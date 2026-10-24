@@ -1,0 +1,111 @@
+# Unit tests: promtool test rules orders-api-slo.test.yaml
+# Traffic is modelled as 300 requests/min (5 req/s), matching orders-loadgen.
+rule_files:
+  - orders-api-slo.rules.yaml
+
+evaluation_interval: 1m
+
+tests:
+  # 1. Healthy: no errors, all fast. No alerts, full budget left.
+  - interval: 1m
+    input_series:
+      - series: 'http_server_request_duration_seconds_count{exported_job="demo/orders-api",http_route="/orders/{order_id}",http_response_status_code="200"}'
+        values: '0+300x180'
+      - series: 'http_server_request_duration_seconds_bucket{exported_job="demo/orders-api",http_route="/orders/{order_id}",http_response_status_code="200",le="0.25"}'
+        values: '0+300x180'
+    alert_rule_test:
+      - eval_time: 2h
+        alertname: SLOErrorBudgetBurnPage
+        exp_alerts: []
+      - eval_time: 2h
+        alertname: SLOErrorBudgetBurnTicket
+        exp_alerts: []
+    promql_expr_test:
+      # No 5xx series exists at all; "or vector(0)" must still yield 0, not empty.
+      - expr: slo:sli_error:ratio_rate5m{slo="availability"}
+        eval_time: 2h
+        exp_samples:
+          - labels: 'slo:sli_error:ratio_rate5m{service="orders-api",slo="availability"}'
+            value: 0
+      - expr: slo:error_budget_remaining:ratio
+        eval_time: 2h
+        exp_samples:
+          - labels: 'slo:error_budget_remaining:ratio{service="orders-api",slo="availability"}'
+            value: 1
+          - labels: 'slo:error_budget_remaining:ratio{service="orders-api",slo="latency"}'
+            value: 1
+
+  # 2. Outage: 10% errors (20x burn on a 0.5% budget) for 1h. Pages within the hour.
+  - interval: 1m
+    input_series:
+      - series: 'http_server_request_duration_seconds_count{exported_job="demo/orders-api",http_route="/orders/{order_id}",http_response_status_code="200"}'
+        values: '0+270x90'
+      - series: 'http_server_request_duration_seconds_count{exported_job="demo/orders-api",http_route="/orders/{order_id}",http_response_status_code="500"}'
+        values: '0+30x90'
+      - series: 'http_server_request_duration_seconds_bucket{exported_job="demo/orders-api",http_route="/orders/{order_id}",http_response_status_code="200",le="0.25"}'
+        values: '0+270x90'
+      - series: 'http_server_request_duration_seconds_bucket{exported_job="demo/orders-api",http_route="/orders/{order_id}",http_response_status_code="500",le="0.25"}'
+        values: '0+30x90'
+    alert_rule_test:
+      - eval_time: 1h
+        alertname: SLOErrorBudgetBurnPage
+        exp_alerts:
+          - exp_labels:
+              service: orders-api
+              slo: availability
+              severity: critical
+              notify: page
+            exp_annotations:
+              summary: "orders-api is burning its availability error budget fast"
+              description: "At this rate the 30-day availability error budget for orders-api runs out in days, not weeks. Check recent deploys and the error/latency panels."
+              runbook_url: "docs/runbooks/orders-api-slo-burn.md"
+
+  # 3. Slow leak: 1% errors (2x burn) for 3 days. Ticket, never a page.
+  - interval: 1m
+    input_series:
+      - series: 'http_server_request_duration_seconds_count{exported_job="demo/orders-api",http_route="/orders/{order_id}",http_response_status_code="200"}'
+        values: '0+297x4330'
+      - series: 'http_server_request_duration_seconds_count{exported_job="demo/orders-api",http_route="/orders/{order_id}",http_response_status_code="500"}'
+        values: '0+3x4330'
+      - series: 'http_server_request_duration_seconds_bucket{exported_job="demo/orders-api",http_route="/orders/{order_id}",http_response_status_code="200",le="0.25"}'
+        values: '0+297x4330'
+      - series: 'http_server_request_duration_seconds_bucket{exported_job="demo/orders-api",http_route="/orders/{order_id}",http_response_status_code="500",le="0.25"}'
+        values: '0+3x4330'
+    alert_rule_test:
+      - eval_time: 3d
+        alertname: SLOErrorBudgetBurnPage
+        exp_alerts: []
+      - eval_time: 3d
+        alertname: SLOErrorBudgetBurnTicket
+        exp_alerts:
+          - exp_labels:
+              service: orders-api
+              slo: availability
+              severity: warning
+              notify: ticket
+            exp_annotations:
+              summary: "orders-api is slowly burning its availability error budget"
+              description: "orders-api has spent its availability error budget faster than sustainable over the last 3 days. Investigate during working hours."
+              runbook_url: "docs/runbooks/orders-api-slo-burn.md"
+
+  # 4. Latency regression: 10% of requests slower than 250ms (10x burn on a 1% budget).
+  #    Trips the 6x/6h tier but not 14.4x/1h; availability is unaffected.
+  - interval: 1m
+    input_series:
+      - series: 'http_server_request_duration_seconds_count{exported_job="demo/orders-api",http_route="/orders/{order_id}",http_response_status_code="200"}'
+        values: '0+300x90'
+      - series: 'http_server_request_duration_seconds_bucket{exported_job="demo/orders-api",http_route="/orders/{order_id}",http_response_status_code="200",le="0.25"}'
+        values: '0+270x90'
+    alert_rule_test:
+      - eval_time: 1h
+        alertname: SLOErrorBudgetBurnPage
+        exp_alerts:
+          - exp_labels:
+              service: orders-api
+              slo: latency
+              severity: critical
+              notify: page
+            exp_annotations:
+              summary: "orders-api is burning its latency error budget fast"
+              description: "At this rate the 30-day latency error budget for orders-api runs out in days, not weeks. Check recent deploys and the error/latency panels."
+              runbook_url: "docs/runbooks/orders-api-slo-burn.md"

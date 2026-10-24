@@ -1,0 +1,36 @@
+# Chart: prometheus-community/kube-prometheus-stack 92.11.0 (app v0.94.1)
+# Minimal values for a single-node kind lab.
+
+# On kind these components bind to 127.0.0.1, so their scrape targets are
+# always down and fire noisy alerts. Disable them for the lab.
+kubeEtcd:
+  enabled: false
+kubeControllerManager:
+  enabled: false
+kubeScheduler:
+  enabled: false
+kubeProxy:
+  enabled: false
+
+prometheus:
+  prometheusSpec:
+    # Pick up ServiceMonitors, PodMonitors and rules from any namespace,
+    # not just ones labelled with this Helm release.
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    # 30d so the 30-day SLO window and error-budget-remaining rules have data.
+    retention: 30d
+    retentionSize: 8GB
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: standard
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+grafana:
+  # Lab-only placeholder. Do not reuse outside the local cluster.
+  adminPassword: admin

@@ -1,0 +1,15 @@
+# Limits lab apps to this repo and the demo namespace, so a bad manifest
+# can't deploy somewhere else or create cluster-scoped objects.
+apiVersion: argoproj.io/v1alpha1
+kind: AppProject
+metadata:
+  name: sre-lab
+  namespace: argocd
+spec:
+  description: SRE prep lab workloads
+  sourceRepos:
+    - https://github.com/CloudScope/sre-prep.git
+  destinations:
+    - server: https://kubernetes.default.svc
+      namespace: demo
+  clusterResourceWhitelist: []
