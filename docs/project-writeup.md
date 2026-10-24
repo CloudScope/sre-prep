@@ -448,6 +448,20 @@ The 43-minute estimate was for the 1h tier alone. The 6h window still held earli
 
 Adding inventory-api behind orders-api turns every request into one trace across two services, and the trace alone shows which service failed.
 
+**How the two services link.** They share no code and no database; two things connect them:
+
+- **The network:** orders-api calls inventory-api by its Kubernetes Service name, `http://inventory-api:8000` (both run in the `demo` namespace; set by `INVENTORY_URL`). The Service load-balances across inventory-api pods.
+- **The trace context:** every call carries a W3C `traceparent` header, `00-<trace-id>-<parent-span-id>-01`. orders-api's httpx instrumentation writes it; inventory-api's FastAPI instrumentation reads it and makes its own spans children of the caller's span. Each service exports its spans separately, and Jaeger joins them by the shared trace ID.
+
+**Request flow for one order:**
+
+1. orders-loadgen sends `GET /orders/42` to the orders-api Service.
+2. orders-api starts a new trace with a server span, then runs `db.lookup_order` (a simulated 5–30 ms lookup). With its 5% error rate it can fail here: it answers 500 and the flow ends.
+3. orders-api calls `GET http://inventory-api:8000/inventory/42` (2 s timeout). httpx records a client span and adds the `traceparent` header.
+4. inventory-api continues the same trace: a server span, then `db.check_stock` (2–15 ms). With its own 5% error rate it can answer 500.
+5. orders-api answers the caller: **200** `{"order_id": 42, "status": "shipped"}` when inventory said 200, or **502** when inventory returned 5xx or timed out.
+6. In the background, both services export spans in batches and metrics every 15 s to the OTel Collector over OTLP. Jaeger assembles the full trace; Prometheus counts each service's requests by status code.
+
 **8.1 Design.** For every order, orders-api calls `GET /inventory/{item_id}`. Each service has its own `ERROR_RATE` knob, and the status code tells failures apart:
 
 | Failure in | orders-api returns | Where the trace turns red |
