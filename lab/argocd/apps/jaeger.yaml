@@ -11,7 +11,10 @@ spec:
   sources:
     - repoURL: https://jaegertracing.github.io/helm-charts
       chart: jaeger
-      targetRevision: 4.16.1
+      # Pinned to 4.13.1 (Jaeger 2.20.0): Jaeger 2.21.0 removed the v1 HTTP query
+      # API (/api/services, /api/traces), which Grafana's Jaeger data source still
+      # calls. Revisit when Grafana supports the v3 API (/api/v3/...).
+      targetRevision: 4.13.1
       helm:
         releaseName: jaeger
         valueFiles:

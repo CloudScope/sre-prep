@@ -1,4 +1,5 @@
-# Chart: jaegertracing/jaeger 4.16.1 (Jaeger v2.22.0, built on the OTel Collector)
+# Chart: jaegertracing/jaeger 4.13.1 (Jaeger v2.20.0, built on the OTel Collector)
+# Pinned below 2.21 for Grafana compatibility; see lab/argocd/apps/jaeger.yaml.
 # Single all-in-one pod: OTLP receiver + in-memory storage + query UI.
 # In-memory means traces are lost on restart; fine for a lab, not for production
 # (use Elasticsearch/OpenSearch/Cassandra/Badger there).
