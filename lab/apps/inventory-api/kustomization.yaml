@@ -1,0 +1,11 @@
+# Deploy: kubectl apply -k lab/apps/inventory-api (normally synced by Argo CD)
+# Same pattern as orders-api: code in a ConfigMap, hash suffix rolls the pods.
+namespace: demo
+resources:
+  - k8s/deployment.yaml
+  - k8s/service.yaml
+configMapGenerator:
+  - name: inventory-api-src
+    files:
+      - app.py
+      - requirements.txt

@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: inventory-api
+  labels:
+    app.kubernetes.io/name: inventory-api
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: inventory-api
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: inventory-api
+    spec:
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 1000
+      initContainers:
+        # Installs dependencies into a shared volume. Replace with a built image
+        # (see Dockerfile) if you have Docker on the kind host.
+        - name: install-deps
+          image: python:3.13.17-slim
+          command: ["pip", "install", "--no-cache-dir", "--target", "/deps", "-r", "/src/requirements.txt"]
+          env:
+            - name: HOME
+              value: /tmp
+          volumeMounts:
+            - { name: src, mountPath: /src }
+            - { name: deps, mountPath: /deps }
+      containers:
+        - name: inventory-api
+          image: python:3.13.17-slim
+          command: ["python", "-m", "uvicorn", "--app-dir", "/src", "app:app", "--host", "0.0.0.0", "--port", "8000"]
+          ports:
+            - { name: http, containerPort: 8000 }
+          env:
+            - name: PYTHONPATH
+              value: /deps
+            - name: OTEL_SERVICE_NAME
+              value: inventory-api
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: service.namespace=demo,deployment.environment.name=lab
+            - name: OTEL_EXPORTER_OTLP_ENDPOINT
+              value: http://otel-opentelemetry-collector.monitoring.svc:4318
+            # Emit stable HTTP semconv: http.server.request.duration (seconds)
+            # with http.response.status_code, instead of the old ms-based metric.
+            - name: OTEL_SEMCONV_STABILITY_OPT_IN
+              value: http
+            # Failure injection knobs; change them in Git (Argo CD self-heal reverts kubectl set env)
+            - name: ERROR_RATE
+              value: "0.05"
+            - name: EXTRA_LATENCY_MS
+              value: "0"
+          readinessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 5
+          livenessProbe:
+            httpGet: { path: /healthz, port: http }
+            periodSeconds: 10
+          resources:
+            requests: { cpu: 50m, memory: 128Mi }
+            limits: { cpu: 500m, memory: 256Mi }
+          volumeMounts:
+            - { name: src, mountPath: /src }
+            - { name: deps, mountPath: /deps }
+      volumes:
+        - name: src
+          configMap:
+            name: inventory-api-src
+        - name: deps
+          emptyDir: {}

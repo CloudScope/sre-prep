@@ -21,9 +21,16 @@ build from `Dockerfile` and `kind load docker-image` instead.
 |---|---|---|
 | HTTP server latency histogram | FastAPI instrumentation (stable semconv) | `http_server_request_duration_seconds_{bucket,count,sum}` |
 | Orders by outcome | custom counter `orders.processed` | `orders_processed_total{outcome}` |
-| Spans | `GET /orders/{order_id}` server span + child `db.lookup_order` | Jaeger (service `orders-api`) |
+| Spans | `GET /orders/{order_id}` server span, child `db.lookup_order`, client span `GET` to inventory-api | Jaeger (services `orders-api`, `inventory-api`) |
 
 `/healthz` is excluded from instrumentation so probe traffic stays out of the SLI.
+
+## Calls to inventory-api
+
+Every order calls `GET /inventory/{item_id}` on [inventory-api](../inventory-api). The httpx
+instrumentation adds a client span and the W3C `traceparent` header, so one request is one
+trace across both services. Status codes tell the failure apart: **500** = orders-api failed,
+**502** = inventory-api failed (`orders_processed_total{outcome="dependency_error"}`).
 
 ## Failure injection
 

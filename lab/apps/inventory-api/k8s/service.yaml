@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: inventory-api
+  labels:
+    app.kubernetes.io/name: inventory-api
+spec:
+  selector:
+    app.kubernetes.io/name: inventory-api
+  ports:
+    - { name: http, port: 8000, targetPort: http }

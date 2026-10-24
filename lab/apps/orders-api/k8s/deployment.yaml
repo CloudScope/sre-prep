@@ -48,9 +48,11 @@ spec:
             # with http.response.status_code, instead of the old ms-based metric.
             - name: OTEL_SEMCONV_STABILITY_OPT_IN
               value: http
+            - name: INVENTORY_URL
+              value: http://inventory-api:8000
             # Failure injection knobs, e.g. kubectl -n demo set env deploy/orders-api ERROR_RATE=0.05
             - name: ERROR_RATE
-              value: "0.1"
+              value: "0.05"
             - name: EXTRA_LATENCY_MS
               value: "0"
           readinessProbe:
