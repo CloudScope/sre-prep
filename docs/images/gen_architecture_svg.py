@@ -35,38 +35,40 @@ text(24, 50, "Numbered steps follow one change and one request; colours mark the
 zone(24, 68, 712, 104); text(40, 90, "GitOps", 11.5, 600, QUIET)
 named(40, 100, 180, 56, GIT, "Engineer", ["commits a change"])
 named(290, 100, 180, 56, GIT, "GitHub repo", ["values, manifests, rules"])
-named(540, 100, 180, 56, GIT, "Argo CD", ["8 apps, self-heal on"])
+named(540, 100, 180, 56, GIT, "Argo CD", ["9 apps, self-heal on"])
 # cluster
 zone(24, 196, 712, 432); text(40, 220, "kind cluster, single node", 13, 600)
 text(40, 246, "Workloads (ns demo)", 11.5, 600, QUIET); text(264, 246, "Pipeline (ns monitoring)", 11.5, 600, QUIET); text(516, 246, "Backends (ns monitoring)", 11.5, 600, QUIET)
 named(40, 260, 184, 56, WORK, "orders-loadgen", ["about 5 req/s"])
+named(40, 548, 184, 64, WORK, "inventory-api", ["FastAPI, OTel SDK 1.45", "span: db.check_stock"])
 box(40, 340, 184, 172, WORK); text(132, 364, "orders-api", 13, 600, INK, "middle"); text(132, 382, "FastAPI, OTel SDK 1.45", 11.5, 400, QUIET, "middle")
 chip(56, 398, 152, 44, WORK); text(132, 416, "TracerProvider", 12, 600, INK, "middle"); text(132, 432, "batch span export", 11.5, 400, QUIET, "middle")
 chip(56, 454, 152, 44, WORK); text(132, 472, "MeterProvider", 12, 600, INK, "middle"); text(132, 488, "metrics every 15 s", 11.5, 400, QUIET, "middle")
-box(264, 260, 212, 270, PIPE, True); text(370, 284, "OTel Collector", 13, 600, INK, "middle"); text(370, 302, "OTLP :4317 gRPC, :4318 HTTP", 11.5, 400, INK, "middle")
-chip(280, 318, 180, 44, PIPE); text(370, 336, "receivers", 12, 600, INK, "middle"); text(370, 352, "otlp", 11.5, 400, QUIET, "middle")
-chip(280, 378, 180, 60, PIPE); text(370, 396, "processors", 12, 600, INK, "middle"); text(370, 412, "memory_limiter", 11.5, 400, QUIET, "middle"); text(370, 428, "k8sattributes, batch", 11.5, 400, QUIET, "middle")
-chip(280, 454, 180, 60, PIPE); text(370, 472, "exporters", 12, 600, INK, "middle"); text(370, 488, "prometheus :8889", 11.5, 400, QUIET, "middle"); text(370, 504, "otlp to jaeger :4317", 11.5, 400, QUIET, "middle")
+box(264, 260, 212, 278, PIPE, True); text(370, 284, "OTel Collector", 13, 600, INK, "middle"); text(370, 302, "OTLP :4317 gRPC, :4318 HTTP", 11.5, 400, INK, "middle")
+chip(280, 318, 180, 52, PIPE); text(370, 338, "receivers", 12, 600, INK, "middle"); text(370, 356, "otlp", 11.5, 400, QUIET, "middle")
+chip(280, 386, 180, 60, PIPE); text(370, 404, "processors", 12, 600, INK, "middle"); text(370, 420, "memory_limiter", 11.5, 400, QUIET, "middle"); text(370, 436, "k8sattributes, batch", 11.5, 400, QUIET, "middle")
+chip(280, 462, 180, 60, PIPE); text(370, 480, "exporters", 12, 600, INK, "middle"); text(370, 496, "prometheus :8889", 11.5, 400, QUIET, "middle"); text(370, 512, "otlp to jaeger :4317", 11.5, 400, QUIET, "middle")
 named(516, 260, 204, 88, STORE, "Prometheus", ["18 SLO + alert rules", "30-day retention, 10Gi PVC"])
 named(516, 372, 204, 56, UI, "Alertmanager", ["page or ticket"])
 named(516, 452, 204, 72, STORE, "Jaeger v2", ["OTLP in, query API :16686", "20k traces in memory"])
 named(264, 556, 456, 56, UI, "Grafana", ["dashboards and Explore: metrics next to traces"])
 # connectors (broken around badges)
 for d, a in [("M220 128H245", False), ("M265 128H290", True), ("M470 128H495", False), ("M515 128H540", True),
-             ("M132 316V340", True), ("M370 362V378", True), ("M370 438V454", True),
-             ("M224 420H244V390", False), ("M244 370V340H280", True),
-             ("M460 470H496V410", False), ("M496 390V304H516", True),
-             ("M460 498H478", False), ("M498 498H516", True),
+             ("M132 316V340", True), ("M132 512V548", True), ("M370 370V386", True), ("M370 446V462", True),
+             ("M224 344H242", False), ("M262 344H280", True),
+             ("M224 580H252V482", False), ("M252 458V362H280", True),
+             ("M460 478H496V410", False), ("M496 390V304H516", True),
+             ("M460 506H478", False), ("M498 506H516", True),
              ("M618 348V372", True), ("M618 524V556", True), ("M720 304H728V584H720", True)]:
     path(d, a)
 path("M630 156V196", True, True)
-text(140, 332, "HTTP", 11.5, 400, QUIET); text(646, 188, "sync", 11.5, 400, QUIET)
-for cx, cy, c, n in [(255, 128, GIT, "1"), (505, 128, GIT, "2"), (612, 184, GIT, "3"), (244, 380, WORK, "4"),
-                     (496, 400, STORE, "5"), (488, 498, PIPE, "6"), (598, 360, UI, "7"), (598, 540, UI, "8")]:
+text(140, 332, "HTTP", 11.5, 400, QUIET); text(140, 534, "HTTP + traceparent", 11.5, 400, QUIET); text(646, 188, "sync", 11.5, 400, QUIET)
+for cx, cy, c, n in [(255, 128, GIT, "1"), (505, 128, GIT, "2"), (612, 184, GIT, "3"), (252, 344, WORK, "4"), (252, 470, WORK, "4"),
+                     (496, 400, STORE, "5"), (488, 506, PIPE, "6"), (598, 360, UI, "7"), (598, 540, UI, "8")]:
     badge(cx, cy, c, n)
 # legend
 legend = [(48, 668, GIT, "1", "Engineer pushes a change to GitHub"), (48, 692, GIT, "2", "Argo CD pulls the repo"),
-          (48, 716, GIT, "3", "Argo CD syncs and self-heals every app"), (48, 740, WORK, "4", "App sends spans and metrics over OTLP"),
+          (48, 716, GIT, "3", "Argo CD syncs and self-heals every app"), (48, 740, WORK, "4", "Both services send spans and metrics over OTLP"),
           (408, 668, STORE, "5", "Prometheus scrapes metrics from the Collector"), (408, 692, PIPE, "6", "Collector forwards traces to Jaeger"),
           (408, 716, UI, "7", "SLO burn-rate alerts go to Alertmanager"), (408, 740, UI, "8", "Grafana queries Prometheus and Jaeger")]
 for cx, cy, c, n, s in legend:

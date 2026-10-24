@@ -13,7 +13,7 @@
 <text x="380.0" y="142" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">values, manifests, rules</text>
 <rect x="540" y="100" width="180" height="56" rx="8" fill="#475569" fill-opacity="0.08" stroke="#475569" stroke-width="1.25"/>
 <text x="630.0" y="124" font-size="13" font-weight="600" fill="#111827" text-anchor="middle">Argo CD</text>
-<text x="630.0" y="142" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">8 apps, self-heal on</text>
+<text x="630.0" y="142" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">9 apps, self-heal on</text>
 <rect x="24" y="196" width="712" height="432" rx="8" fill="#F3F4F6" stroke="#9CA3AF" stroke-width="1"/>
 <text x="40" y="220" font-size="13" font-weight="600" fill="#111827" text-anchor="start">kind cluster, single node</text>
 <text x="40" y="246" font-size="11.5" font-weight="600" fill="#4B5563" text-anchor="start">Workloads (ns demo)</text>
@@ -22,6 +22,10 @@
 <rect x="40" y="260" width="184" height="56" rx="8" fill="#EA580C" fill-opacity="0.08" stroke="#EA580C" stroke-width="1.25"/>
 <text x="132.0" y="284" font-size="13" font-weight="600" fill="#111827" text-anchor="middle">orders-loadgen</text>
 <text x="132.0" y="302" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">about 5 req/s</text>
+<rect x="40" y="548" width="184" height="64" rx="8" fill="#EA580C" fill-opacity="0.08" stroke="#EA580C" stroke-width="1.25"/>
+<text x="132.0" y="572" font-size="13" font-weight="600" fill="#111827" text-anchor="middle">inventory-api</text>
+<text x="132.0" y="590" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">FastAPI, OTel SDK 1.45</text>
+<text x="132.0" y="606" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">span: db.check_stock</text>
 <rect x="40" y="340" width="184" height="172" rx="8" fill="#EA580C" fill-opacity="0.08" stroke="#EA580C" stroke-width="1.25"/>
 <text x="132" y="364" font-size="13" font-weight="600" fill="#111827" text-anchor="middle">orders-api</text>
 <text x="132" y="382" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">FastAPI, OTel SDK 1.45</text>
@@ -31,20 +35,20 @@
 <rect x="56" y="454" width="152" height="44" rx="6" fill="#FFFFFF" fill-opacity="0.6" stroke="#EA580C" stroke-width="1"/>
 <text x="132" y="472" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">MeterProvider</text>
 <text x="132" y="488" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">metrics every 15 s</text>
-<rect x="264" y="260" width="212" height="270" rx="8" fill="#2563EB" fill-opacity="0.14" stroke="#2563EB" stroke-width="2"/>
+<rect x="264" y="260" width="212" height="278" rx="8" fill="#2563EB" fill-opacity="0.14" stroke="#2563EB" stroke-width="2"/>
 <text x="370" y="284" font-size="13" font-weight="600" fill="#111827" text-anchor="middle">OTel Collector</text>
 <text x="370" y="302" font-size="11.5" font-weight="400" fill="#111827" text-anchor="middle">OTLP :4317 gRPC, :4318 HTTP</text>
-<rect x="280" y="318" width="180" height="44" rx="6" fill="#FFFFFF" fill-opacity="0.6" stroke="#2563EB" stroke-width="1"/>
-<text x="370" y="336" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">receivers</text>
-<text x="370" y="352" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">otlp</text>
-<rect x="280" y="378" width="180" height="60" rx="6" fill="#FFFFFF" fill-opacity="0.6" stroke="#2563EB" stroke-width="1"/>
-<text x="370" y="396" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">processors</text>
-<text x="370" y="412" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">memory_limiter</text>
-<text x="370" y="428" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">k8sattributes, batch</text>
-<rect x="280" y="454" width="180" height="60" rx="6" fill="#FFFFFF" fill-opacity="0.6" stroke="#2563EB" stroke-width="1"/>
-<text x="370" y="472" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">exporters</text>
-<text x="370" y="488" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">prometheus :8889</text>
-<text x="370" y="504" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">otlp to jaeger :4317</text>
+<rect x="280" y="318" width="180" height="52" rx="6" fill="#FFFFFF" fill-opacity="0.6" stroke="#2563EB" stroke-width="1"/>
+<text x="370" y="338" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">receivers</text>
+<text x="370" y="356" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">otlp</text>
+<rect x="280" y="386" width="180" height="60" rx="6" fill="#FFFFFF" fill-opacity="0.6" stroke="#2563EB" stroke-width="1"/>
+<text x="370" y="404" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">processors</text>
+<text x="370" y="420" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">memory_limiter</text>
+<text x="370" y="436" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">k8sattributes, batch</text>
+<rect x="280" y="462" width="180" height="60" rx="6" fill="#FFFFFF" fill-opacity="0.6" stroke="#2563EB" stroke-width="1"/>
+<text x="370" y="480" font-size="12" font-weight="600" fill="#111827" text-anchor="middle">exporters</text>
+<text x="370" y="496" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">prometheus :8889</text>
+<text x="370" y="512" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">otlp to jaeger :4317</text>
 <rect x="516" y="260" width="204" height="88" rx="8" fill="#059669" fill-opacity="0.08" stroke="#059669" stroke-width="1.25"/>
 <text x="618.0" y="284" font-size="13" font-weight="600" fill="#111827" text-anchor="middle">Prometheus</text>
 <text x="618.0" y="302" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="middle">18 SLO + alert rules</text>
@@ -64,19 +68,23 @@
 <path d="M470 128H495" fill="none" stroke="#9CA3AF" stroke-width="1.25"/>
 <path d="M515 128H540" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
 <path d="M132 316V340" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
-<path d="M370 362V378" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
-<path d="M370 438V454" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
-<path d="M224 420H244V390" fill="none" stroke="#9CA3AF" stroke-width="1.25"/>
-<path d="M244 370V340H280" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
-<path d="M460 470H496V410" fill="none" stroke="#9CA3AF" stroke-width="1.25"/>
+<path d="M132 512V548" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
+<path d="M370 370V386" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
+<path d="M370 446V462" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
+<path d="M224 344H242" fill="none" stroke="#9CA3AF" stroke-width="1.25"/>
+<path d="M262 344H280" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
+<path d="M224 580H252V482" fill="none" stroke="#9CA3AF" stroke-width="1.25"/>
+<path d="M252 458V362H280" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
+<path d="M460 478H496V410" fill="none" stroke="#9CA3AF" stroke-width="1.25"/>
 <path d="M496 390V304H516" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
-<path d="M460 498H478" fill="none" stroke="#9CA3AF" stroke-width="1.25"/>
-<path d="M498 498H516" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
+<path d="M460 506H478" fill="none" stroke="#9CA3AF" stroke-width="1.25"/>
+<path d="M498 506H516" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
 <path d="M618 348V372" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
 <path d="M618 524V556" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
 <path d="M720 304H728V584H720" fill="none" stroke="#9CA3AF" stroke-width="1.25" marker-end="url(#arrow)"/>
 <path d="M630 156V196" fill="none" stroke="#9CA3AF" stroke-width="1.25" stroke-dasharray="4 3" marker-end="url(#arrow)"/>
 <text x="140" y="332" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="start">HTTP</text>
+<text x="140" y="534" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="start">HTTP + traceparent</text>
 <text x="646" y="188" font-size="11.5" font-weight="400" fill="#4B5563" text-anchor="start">sync</text>
 <circle cx="255" cy="128" r="10" fill="#FFFFFF" stroke="#475569" stroke-width="1.25"/>
 <circle cx="255" cy="128" r="10" fill="#475569" fill-opacity="0.25"/>
@@ -87,15 +95,18 @@
 <circle cx="612" cy="184" r="10" fill="#FFFFFF" stroke="#475569" stroke-width="1.25"/>
 <circle cx="612" cy="184" r="10" fill="#475569" fill-opacity="0.25"/>
 <text x="612" y="188" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">3</text>
-<circle cx="244" cy="380" r="10" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.25"/>
-<circle cx="244" cy="380" r="10" fill="#EA580C" fill-opacity="0.25"/>
-<text x="244" y="384" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">4</text>
+<circle cx="252" cy="344" r="10" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.25"/>
+<circle cx="252" cy="344" r="10" fill="#EA580C" fill-opacity="0.25"/>
+<text x="252" y="348" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">4</text>
+<circle cx="252" cy="470" r="10" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.25"/>
+<circle cx="252" cy="470" r="10" fill="#EA580C" fill-opacity="0.25"/>
+<text x="252" y="474" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">4</text>
 <circle cx="496" cy="400" r="10" fill="#FFFFFF" stroke="#059669" stroke-width="1.25"/>
 <circle cx="496" cy="400" r="10" fill="#059669" fill-opacity="0.25"/>
 <text x="496" y="404" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">5</text>
-<circle cx="488" cy="498" r="10" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.25"/>
-<circle cx="488" cy="498" r="10" fill="#2563EB" fill-opacity="0.25"/>
-<text x="488" y="502" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">6</text>
+<circle cx="488" cy="506" r="10" fill="#FFFFFF" stroke="#2563EB" stroke-width="1.25"/>
+<circle cx="488" cy="506" r="10" fill="#2563EB" fill-opacity="0.25"/>
+<text x="488" y="510" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">6</text>
 <circle cx="598" cy="360" r="10" fill="#FFFFFF" stroke="#DB2777" stroke-width="1.25"/>
 <circle cx="598" cy="360" r="10" fill="#DB2777" fill-opacity="0.25"/>
 <text x="598" y="364" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">7</text>
@@ -117,7 +128,7 @@
 <circle cx="48" cy="740" r="10" fill="#FFFFFF" stroke="#EA580C" stroke-width="1.25"/>
 <circle cx="48" cy="740" r="10" fill="#EA580C" fill-opacity="0.25"/>
 <text x="48" y="744" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">4</text>
-<text x="66" y="744" font-size="12" font-weight="400" fill="#111827" text-anchor="start">App sends spans and metrics over OTLP</text>
+<text x="66" y="744" font-size="12" font-weight="400" fill="#111827" text-anchor="start">Both services send spans and metrics over OTLP</text>
 <circle cx="408" cy="668" r="10" fill="#FFFFFF" stroke="#059669" stroke-width="1.25"/>
 <circle cx="408" cy="668" r="10" fill="#059669" fill-opacity="0.25"/>
 <text x="408" y="672" font-size="11.5" font-weight="600" fill="#111827" text-anchor="middle">5</text>

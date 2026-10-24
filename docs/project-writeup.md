@@ -12,10 +12,10 @@ I built a small but production-shaped reliability platform on a local Kubernetes
 
 **What it does, in numbers (measured in the lab):**
 
-- **8 Argo CD Applications** deploy everything from this repo. `helm list` is empty: Git is the only source of truth.
+- **9 Argo CD Applications** deploy everything from this repo. `helm list` is empty: Git is the only source of truth.
 - **2 SLOs** on one user journey: availability 99.5% and latency 99% under 250 ms, over a 30-day window.
 - **18 Prometheus rules** (SLIs over 6 windows, error budget, 2 burn-rate alerts), covered by **4 promtool unit-test scenarios**.
-- **21/21 scrape targets up**, about **7 spans/s**, and every request traceable end to end in Jaeger and Grafana.
+- **21/21 scrape targets up**, about **7 spans/s**, and every request traced end to end across two services in Jaeger and Grafana.
 - An **incident drill run through Git**: a commit injected 10% errors, and the page fired **26.5 minutes** later with the failing span visible in Jaeger.
 
 ## Contents
@@ -29,9 +29,10 @@ I built a small but production-shaped reliability platform on a local Kubernetes
 7. [Step 5: GitOps with Argo CD](#step-5-gitops-with-argo-cd)
 8. [Step 6: Distributed tracing with Jaeger and Grafana](#step-6-distributed-tracing-with-jaeger-and-grafana)
 9. [Step 7: End-to-end incident drill, run through Git](#step-7-end-to-end-incident-drill-run-through-git)
-10. [Real problems and how they were debugged](#real-problems-and-how-they-were-debugged)
-11. [What I would change for production](#what-i-would-change-for-production)
-12. [Run it yourself](#run-it-yourself)
+10. [Step 8: A second service and cross-service tracing](#step-8-a-second-service-and-cross-service-tracing)
+11. [Real problems and how they were debugged](#real-problems-and-how-they-were-debugged)
+12. [What I would change for production](#what-i-would-change-for-production)
+13. [Run it yourself](#run-it-yourself)
 
 ## Architecture
 
@@ -42,13 +43,13 @@ The diagram above follows one change and one request through the system:
 | 1 | An engineer pushes a change to GitHub |
 | 2 | Argo CD pulls the repo |
 | 3 | Argo CD syncs and self-heals every component, including itself |
-| 4 | orders-api sends spans and metrics to the OTel Collector over OTLP |
+| 4 | orders-api and inventory-api send spans and metrics to the OTel Collector over OTLP |
 | 5 | Prometheus scrapes the app's metrics from the Collector |
 | 6 | The Collector forwards traces to Jaeger |
 | 7 | Prometheus evaluates the SLO rules and sends burn-rate alerts to Alertmanager |
 | 8 | Grafana queries Prometheus and Jaeger side by side |
 
-The app talks only to the Collector. The Collector enriches everything with Kubernetes metadata and fans it out, so backends can change without touching application code. podinfo (not drawn) is a second workload scraped by Prometheus directly.
+Both services talk only to the Collector, and orders-api calls inventory-api with a W3C `traceparent` header, so each request is one trace across both. The Collector enriches everything with Kubernetes metadata and fans it out, so backends can change without touching application code. podinfo (not drawn) is a second workload scraped by Prometheus directly.
 
 ## Tech stack
 
@@ -59,10 +60,10 @@ Every chart and image is pinned to an exact version, so the lab rebuilds identic
 | kind (Kubernetes) | v1.37.0, single node | Local cluster |
 | kube-prometheus-stack | chart 92.11.0 (Prometheus 3.15.0, Grafana 13.2.4) | Metrics, alerting, dashboards, Prometheus Operator |
 | OpenTelemetry Collector (contrib) | chart 0.177.0, collector 0.163.2 | Telemetry gateway: OTLP in, Prometheus and Jaeger out |
-| OpenTelemetry Python SDK | 1.45.1 (FastAPI instrumentation 0.66b1) | Traces and metrics from the app |
+| OpenTelemetry Python SDK | 1.45.1 (FastAPI and httpx instrumentation 0.66b1) | Traces and metrics from the app |
 | Jaeger | chart 4.13.1, Jaeger 2.20.0 | Trace storage and UI |
 | Argo CD | chart 10.11.1, Argo CD 3.5.6 | GitOps: deploys and self-heals everything |
-| orders-api | FastAPI 0.162.0 on Python 3.13 | Sample service with failure injection |
+| orders-api, inventory-api | FastAPI 0.162.0 on Python 3.13, httpx 0.28.1 | Two sample services (orders-api calls inventory-api), failure injection in each |
 | podinfo | chart 6.15.0 | Second sample workload for scraping |
 | promtool | 3.15.0 | Unit tests for alert and recording rules |
 
@@ -303,6 +304,7 @@ kubectl apply -f lab/argocd/root.yaml     # app of apps
 | orders-api-slo | `lab/slo/k8s/` (PrometheusRule) | platform |
 | podinfo | podinfo chart 6.15.0 + values | sre-lab |
 | orders-api | `lab/apps/orders-api/` (Kustomize) | sre-lab |
+| inventory-api | `lab/apps/inventory-api/` (Kustomize) | sre-lab |
 
 - **Multi-source Applications:** the chart comes from its Helm repo at a pinned version; the values file comes from this repo through a `$values` reference.
 - **Two AppProjects as guardrails:** `platform` may create cluster-scoped objects (CRDs, ClusterRoles, webhooks). `sre-lab` is locked to the `demo` namespace and its own Namespace object.
@@ -442,6 +444,58 @@ The 43-minute estimate was for the 1h tier alone. The 6h window still held earli
 
 **7.5 End the drill the same way it started:** `git revert` the commit and push. The 5m window drops below threshold within minutes and the page clears, while the 6h and 3d windows keep a record of what the month cost.
 
+## Step 8: A second service and cross-service tracing
+
+Adding inventory-api behind orders-api turns every request into one trace across two services, and the trace alone shows which service failed.
+
+**8.1 Design.** For every order, orders-api calls `GET /inventory/{item_id}`. Each service has its own `ERROR_RATE` knob, and the status code tells failures apart:
+
+| Failure in | orders-api returns | Where the trace turns red |
+| --- | --- | --- |
+| orders-api | 500 | `db.lookup_order` in orders-api; inventory-api is never called |
+| inventory-api | 502 (`outcome="dependency_error"`) | `db.check_stock` in inventory-api, then up through the client span to orders-api |
+
+**8.2 Context propagation is two lines.** Instrumenting httpx makes every outgoing call a client span and adds the W3C `traceparent` header; inventory-api's FastAPI instrumentation reads it, so its spans join the same trace:
+
+```python
+# lab/apps/orders-api/app.py (excerpt)
+HTTPXClientInstrumentor().instrument()   # before creating the client
+inventory = httpx.Client(base_url=os.getenv("INVENTORY_URL", "http://inventory-api:8000"), timeout=2.0)
+
+    try:
+        inventory.get(f"/inventory/{order_id % 100}").raise_for_status()
+    except httpx.HTTPError as exc:
+        orders_processed.add(1, {"outcome": "dependency_error"})
+        trace.get_current_span().set_status(trace.StatusCode.ERROR, f"inventory-api: {exc}")
+        raise HTTPException(status_code=502, detail="inventory-api failed") from exc
+```
+
+**8.3 What the three cases look like in Jaeger** (from the cluster, 5% errors injected in each service):
+
+```text
+healthy (200)
+  orders-api     GET /orders/{order_id}      200   34.2 ms
+    orders-api     db.lookup_order                    7.9 ms
+    orders-api     GET  (client span)          200   16.0 ms
+      inventory-api  GET /inventory/{item_id}    200   14.9 ms
+        inventory-api  db.check_stock                     7.8 ms
+
+failure in orders-api (500): the trace stops here
+  orders-api     GET /orders/{order_id}      500  ERROR
+    orders-api     db.lookup_order                  ERROR  HTTPException: 500: injected failure
+
+failure in inventory-api (502): the error starts downstream and spreads up
+  orders-api     GET /orders/{order_id}      502  ERROR
+    orders-api     db.lookup_order                  ok
+    orders-api     GET  (client span)          500  ERROR
+      inventory-api  GET /inventory/{item_id}    500  ERROR
+        inventory-api  db.check_stock                   ERROR  HTTPException: 500: injected failure
+```
+
+**8.4 Results:** 257 of the last 300 orders-api traces crossed both services (the rest failed in orders-api before the call). Jaeger's service graph shows the `orders-api → inventory-api` edge, 275 calls in 10 minutes. The orders-api availability SLI counts 502s too, because the user still sees a failed order.
+
+**8.5 Tested before deploying.** Both services and Jaeger 2.20 ran locally first; all three trace shapes appeared before anything was pushed. Then one commit added the code, the manifests and a new Argo CD Application.
+
 ## Real problems and how they were debugged
 
 Six things broke along the way; each one is a small production lesson.
@@ -501,6 +555,7 @@ lab/
   argocd/apps/                    one Application per component + 2 AppProjects
   helm/                           pinned values for every chart
   apps/orders-api/                FastAPI app, Kustomize manifests, load generator, Dockerfile
+  apps/inventory-api/             downstream service called by orders-api
   slo/orders-api-slo.rules.yaml   SLIs, budgets, burn-rate alerts (source of truth)
   slo/orders-api-slo.test.yaml    promtool unit tests
   slo/render.sh                   renders the PrometheusRule into slo/k8s/ for Argo CD
@@ -508,5 +563,5 @@ docs/
   project-writeup.md              this document
   slo.md                          SLO document
   error-budget-policy.md          what happens at each budget level
-  images/architecture.svg         the diagram above
+  images/architecture.svg         the diagram above (+ gen_architecture_svg.py)
 ```
