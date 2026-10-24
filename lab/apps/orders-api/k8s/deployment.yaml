@@ -50,7 +50,7 @@ spec:
               value: http
             # Failure injection knobs, e.g. kubectl -n demo set env deploy/orders-api ERROR_RATE=0.05
             - name: ERROR_RATE
-              value: "0"
+              value: "0.1"
             - name: EXTRA_LATENCY_MS
               value: "0"
           readinessProbe:
