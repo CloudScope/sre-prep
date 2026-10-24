@@ -9,6 +9,7 @@ Local observability lab on kind. Config files are added here as each day's work 
 | 1 | podinfo sample app (`demo`) | done (chart 6.15.0, `helm/podinfo-values.yaml`) |
 | 2 | OpenTelemetry Collector (`monitoring`) | done (chart 0.177.0, `helm/otel-collector-values.yaml`) |
 | 2 | Instrumented sample app (OTel SDK) | done (`apps/orders-api`) |
+| 2 | Jaeger trace backend | done (chart 4.16.1, `helm/jaeger-values.yaml`) |
 
 | 3–4 | SLI recording rules and burn-rate alerts | done (`slo/`, see `docs/slo.md`) |
 
@@ -17,7 +18,7 @@ Local observability lab on kind. Config files are added here as each day's work 
 ```
 app (OTel SDK) --OTLP--> otel-opentelemetry-collector.monitoring.svc:4317 (gRPC) / :4318 (HTTP)
    metrics -> prometheus exporter :8889 -> ServiceMonitor -> Prometheus
-   traces  -> debug exporter (collector logs) until a trace backend is added
+   traces  -> OTLP gRPC -> Jaeger (jaeger.monitoring.svc:4317) -> Jaeger UI :16686, Grafana Explore
    logs    -> debug exporter
 collector self-metrics (otelcol_*) :8888 -> ServiceMonitor -> Prometheus
 ```
@@ -45,6 +46,7 @@ lab/slo/render.sh --check                              # fail if the committed P
 | `kube-prometheus-stack` | `prometheus-community/kube-prometheus-stack` 92.11.0 + `helm/kube-prometheus-stack-values.yaml` | `monitoring` | platform |
 | `otel-collector` | `open-telemetry/opentelemetry-collector` 0.177.0 + `helm/otel-collector-values.yaml` | `monitoring` | platform |
 | `orders-api-slo` | `slo/k8s/` | `monitoring` | platform |
+| `jaeger` | `jaegertracing/jaeger` 4.16.1 + `helm/jaeger-values.yaml` | `monitoring` | platform |
 | `podinfo` | `podinfo/podinfo` 6.15.0 + `helm/podinfo-values.yaml` | `demo` | sre-lab |
 | `orders-api` | `apps/orders-api/` (kustomize) | `demo` | sre-lab |
 

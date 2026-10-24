@@ -21,7 +21,7 @@ build from `Dockerfile` and `kind load docker-image` instead.
 |---|---|---|
 | HTTP server latency histogram | FastAPI instrumentation (stable semconv) | `http_server_request_duration_seconds_{bucket,count,sum}` |
 | Orders by outcome | custom counter `orders.processed` | `orders_processed_total{outcome}` |
-| Spans | `GET /orders/{order_id}` server span + child `db.lookup_order` | collector debug log (no trace backend yet) |
+| Spans | `GET /orders/{order_id}` server span + child `db.lookup_order` | Jaeger (service `orders-api`) |
 
 `/healthz` is excluded from instrumentation so probe traffic stays out of the SLI.
 

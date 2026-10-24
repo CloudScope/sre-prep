@@ -37,6 +37,11 @@ Grafana:
 kubectl -n monitoring port-forward svc/monitoring-grafana 3000:80   # http://localhost:3000, admin / admin (lab only)
 ```
 
+Jaeger (traces):
+```bash
+kubectl -n monitoring port-forward svc/jaeger 16686:16686   # http://localhost:16686, service: orders-api
+```
+
 Prometheus:
 ```bash
 kubectl -n monitoring port-forward svc/monitoring-kube-prometheus-prometheus 9090:9090
