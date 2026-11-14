@@ -1,0 +1,35 @@
+server:
+  port: 8080
+  address: 0.0.0.0
+
+management:
+  server:
+    port: 8081
+    address: 127.0.0.1  # Strictly loopback: unreachable from outside Pod
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: when_authorized
+      probes:
+        enabled: true
+
+spring:
+  application:
+    name: payment-api
+  security:
+    user:
+      name: ${SYNTHETIC_AUTH_USER:synthetic-monitor}
+      password: ${SYNTHETIC_AUTH_PASSWORD:synthetic-secret-password-123}
+      roles: SYNTHETIC_PROBER
+
+# OpenTelemetry Tracing via Micrometer OTLP
+management:
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-opentelemetry-collector.monitoring.svc:4318/v1/traces}

@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: payment-api-sidecar-config
+data:
+  config.yaml: |
+    receivers:
+      prometheus:
+        config:
+          scrape_configs:
+            - job_name: 'payment-actuator-loopback'
+              scrape_interval: 15s
+              metrics_path: '/actuator/prometheus'
+              static_configs:
+                - targets: ['127.0.0.1:8081']
+
+    processors:
+      batch:
+        send_batch_size: 256
+        timeout: 5s
+
+    exporters:
+      otlp:
+        endpoint: "otel-opentelemetry-collector.monitoring.svc:4317"
+        tls:
+          insecure: true
+
+    service:
+      pipelines:
+        metrics:
+          receivers: [prometheus]
+          processors: [batch]
+          exporters: [otlp]
+

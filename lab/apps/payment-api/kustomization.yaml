@@ -1,0 +1,6 @@
+# Deploy: kubectl apply -k lab/apps/payment-api (synced by Argo CD)
+namespace: demo
+resources:
+  - k8s/deployment.yaml
+  - k8s/service.yaml
+  - k8s/sidecar-config.yaml
