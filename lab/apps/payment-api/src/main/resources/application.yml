@@ -15,6 +15,12 @@ management:
       show-details: when_authorized
       probes:
         enabled: true
+  tracing:
+    sampling:
+      probability: 1.0
+  otlp:
+    tracing:
+      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-opentelemetry-collector.monitoring.svc:4318/v1/traces}
 
 spring:
   application:
@@ -24,12 +30,3 @@ spring:
       name: ${SYNTHETIC_AUTH_USER:synthetic-monitor}
       password: ${SYNTHETIC_AUTH_PASSWORD:synthetic-secret-password-123}
       roles: SYNTHETIC_PROBER
-
-# OpenTelemetry Tracing via Micrometer OTLP
-management:
-  tracing:
-    sampling:
-      probability: 1.0
-  otlp:
-    tracing:
-      endpoint: ${OTEL_EXPORTER_OTLP_ENDPOINT:http://otel-opentelemetry-collector.monitoring.svc:4318/v1/traces}
