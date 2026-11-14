@@ -20,7 +20,7 @@ spec:
       containers:
         # 1. Main Spring Boot Application Container
         - name: payment-api
-          image: smartlizzard/payment-api:sha-f6de154
+          image: smartlizzard/payment-api:sha-9f0c374
           imagePullPolicy: IfNotPresent
           ports:
             - name: http
