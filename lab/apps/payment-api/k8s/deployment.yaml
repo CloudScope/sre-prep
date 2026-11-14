@@ -41,23 +41,32 @@ spec:
               value: "0.0"
             - name: EXTRA_LATENCY_MS
               value: "0"
-          # Exec probe: operates inside the pod's network namespace to reach loopback 127.0.0.1:8081
+          # Startup probe gives JVM/Spring Boot up to 90s to complete cold start
+          startupProbe:
+            exec:
+              command:
+                - /bin/sh
+                - -c
+                - "wget -qO- http://127.0.0.1:8081/actuator/health/liveness | grep -q 'UP' || exit 1"
+            initialDelaySeconds: 10
+            periodSeconds: 5
+            failureThreshold: 18
           readinessProbe:
             exec:
               command:
                 - /bin/sh
                 - -c
                 - "wget -qO- http://127.0.0.1:8081/actuator/health/readiness | grep -q 'UP' || exit 1"
-            initialDelaySeconds: 15
             periodSeconds: 5
+            failureThreshold: 3
           livenessProbe:
             exec:
               command:
                 - /bin/sh
                 - -c
                 - "wget -qO- http://127.0.0.1:8081/actuator/health/liveness | grep -q 'UP' || exit 1"
-            initialDelaySeconds: 20
             periodSeconds: 10
+            failureThreshold: 3
           resources:
             requests:
               cpu: 100m
