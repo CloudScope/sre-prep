@@ -12,13 +12,14 @@ RUN mvn package -DskipTests -B
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+# Explicitly create UID/GID 1000 to match Kubernetes runAsUser: 1000
+RUN addgroup -g 1000 -S appgroup && adduser -u 1000 -S appuser -G appgroup
 
 COPY --from=build /app/target/payment-api-0.1.0.jar app.jar
-RUN chown -R appuser:appgroup /app
+RUN chmod 755 /app && chmod 644 /app/app.jar && chown -R appuser:appgroup /app
 
-USER appuser
+USER 1000:1000
 
 EXPOSE 8080
 
-ENTRYPOINT ["java", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
+ENTRYPOINT ["java", "-Djava.net.preferIPv4Stack=true", "-XX:+UseContainerSupport", "-XX:MaxRAMPercentage=75.0", "-jar", "app.jar"]
