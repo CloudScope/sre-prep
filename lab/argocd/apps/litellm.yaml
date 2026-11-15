@@ -10,7 +10,7 @@ spec:
   sources:
     - repoURL: ghcr.io/berriai
       chart: litellm-helm
-      targetRevision: 0.1.33
+      targetRevision: 1.109.1
       helm:
         releaseName: litellm
         valueFiles:

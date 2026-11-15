@@ -29,13 +29,9 @@ service:
   port: 4000
 
 # Proxy Configuration (dynamically rendered as config.yaml in a ConfigMap)
-proxyConfigMap:
-  create: true
-  key: "config.yaml"
-
 proxy_config:
   general_settings:
-    master_key: "os.environ/LITELLM_MASTER_KEY"
+    master_key: "os.environ/PROXY_MASTER_KEY"
   model_list:
     # 1. Mock model for zero-cost lab verification and SLO/chaos drills
     - model_name: mock-model
@@ -64,8 +60,8 @@ serviceMonitor:
   labels:
     release: monitoring  # Matches kube-prometheus-stack serviceMonitorSelector
 
-# OpenTelemetry distributed tracing to our in-cluster OTel Collector
-extraEnv:
+# OpenTelemetry distributed tracing and extra environment variables
+extraEnvVars:
   - name: OTEL_EXPORTER_OTLP_ENDPOINT
     value: "http://otel-opentelemetry-collector.monitoring.svc:4318"
   - name: OTEL_SERVICE_NAME
@@ -82,15 +78,12 @@ resources:
 
 # Health check probes
 livenessProbe:
-  httpGet:
-    path: /health/liveness
-    port: 4000
+  path: /health/liveliness
   initialDelaySeconds: 15
   periodSeconds: 10
 
 readinessProbe:
-  httpGet:
-    path: /health/readiness
-    port: 4000
+  path: /health/readiness
   initialDelaySeconds: 15
   periodSeconds: 5
+
