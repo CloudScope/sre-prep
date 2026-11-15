@@ -40,6 +40,41 @@ A production-grade, stateful deployment of **LiteLLM Proxy & Admin Dashboard** m
 
 ---
 
+## Organization Management: Dhilabs
+
+All teams, users, and virtual API keys are scoped under the primary organization: **`Dhilabs`**.
+
+- **Organization Alias**: `Dhilabs`
+- **Organization ID**: `721e0305-af66-4dea-a450-8e01f3b422f7`
+- **Allowed Models**: `mock-model`, `gpt-4o`, `gemini-1.5-pro`
+
+### 1. Generating a Key Scoped to Dhilabs
+```bash
+curl -s http://localhost:4000/key/generate \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-litellm-master-key-lab" \
+  -d '{
+    "key_alias": "dhilabs-app-key",
+    "organization_id": "721e0305-af66-4dea-a450-8e01f3b422f7",
+    "models": ["mock-model", "gpt-4o", "gemini-1.5-pro"],
+    "max_budget": 100.0
+  }' | jq .
+```
+
+### 2. Creating a Team under Dhilabs
+```bash
+curl -s http://localhost:4000/team/new \
+  -H "Content-Type: application/json" \
+  -H "Authorization: Bearer sk-litellm-master-key-lab" \
+  -d '{
+    "team_alias": "engineering",
+    "organization_id": "721e0305-af66-4dea-a450-8e01f3b422f7",
+    "max_budget": 500.0
+  }' | jq .
+```
+
+---
+
 ## Accessing the LiteLLM Admin UI
 
 1. **Port-Forward LiteLLM**:
