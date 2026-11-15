@@ -37,6 +37,7 @@ proxy_config:
     - model_name: mock-model
       litellm_params:
         model: openai/fake
+        api_key: "fake-mock-key"
         mock_response: "Hello from LiteLLM stateless proxy in local-k8s cluster!"
     # 2. Production model routes (keys injected via secret or env vars)
     - model_name: gpt-4o
@@ -61,6 +62,10 @@ serviceMonitor:
 
 # OpenTelemetry distributed tracing and extra environment variables
 extraEnvVars:
+  - name: OPENAI_API_KEY
+    value: "sk-dummy-openai-key-for-lab"
+  - name: GEMINI_API_KEY
+    value: "dummy-gemini-key-for-lab"
   - name: OTEL_EXPORTER_OTLP_ENDPOINT
     value: "http://otel-opentelemetry-collector.monitoring.svc:4318"
   - name: OTEL_SERVICE_NAME
