@@ -1,0 +1,92 @@
+# Chart: oci://ghcr.io/berriai/litellm-helm
+# Stateless deployment of LiteLLM Proxy on Kubernetes
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/berriai/litellm
+  tag: "main-v1.61.1"
+  pullPolicy: IfNotPresent
+
+# Stateless Mode: No PostgreSQL database needed
+db:
+  deployStandalone: false
+
+# Disable Prisma DB migration jobs since we are running stateless
+migrationJob:
+  enabled: false
+
+# Master API key for proxy administration and client access in lab
+masterkey: "sk-litellm-master-key-lab"
+
+# Service configuration
+service:
+  type: ClusterIP
+  port: 4000
+
+# Proxy Configuration (dynamically rendered as config.yaml in a ConfigMap)
+proxyConfigMap:
+  create: true
+  key: "config.yaml"
+
+proxy_config:
+  general_settings:
+    master_key: "os.environ/LITELLM_MASTER_KEY"
+  model_list:
+    # 1. Mock model for zero-cost lab verification and SLO/chaos drills
+    - model_name: mock-model
+      litellm_params:
+        model: mock_response
+        mock_response: "Hello from LiteLLM stateless proxy in local-k8s cluster!"
+    # 2. Production model routes (keys injected via secret or env vars)
+    - model_name: gpt-4o
+      litellm_params:
+        model: openai/gpt-4o
+        api_key: os.environ/OPENAI_API_KEY
+    - model_name: gemini-1.5-pro
+      litellm_params:
+        model: gemini/gemini-1.5-pro
+        api_key: os.environ/GEMINI_API_KEY
+  litellm_settings:
+    drop_params: true
+    callbacks:
+      - prometheus
+      - otel
+
+# Observability: Prometheus Operator ServiceMonitor
+serviceMonitor:
+  enabled: true
+  interval: 15s
+  labels:
+    release: monitoring  # Matches kube-prometheus-stack serviceMonitorSelector
+
+# OpenTelemetry distributed tracing to our in-cluster OTel Collector
+extraEnv:
+  - name: OTEL_EXPORTER_OTLP_ENDPOINT
+    value: "http://otel-opentelemetry-collector.monitoring.svc:4318"
+  - name: OTEL_SERVICE_NAME
+    value: "litellm-proxy"
+
+# Sized for laptop kind cluster
+resources:
+  requests:
+    cpu: 100m
+    memory: 256Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+
+# Health check probes
+livenessProbe:
+  httpGet:
+    path: /health/liveness
+    port: 4000
+  initialDelaySeconds: 15
+  periodSeconds: 10
+
+readinessProbe:
+  httpGet:
+    path: /health/readiness
+    port: 4000
+  initialDelaySeconds: 15
+  periodSeconds: 5

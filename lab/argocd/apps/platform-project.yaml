@@ -15,6 +15,8 @@ spec:
     - https://open-telemetry.github.io/opentelemetry-helm-charts
     - https://argoproj.github.io/argo-helm
     - https://jaegertracing.github.io/helm-charts
+    - ghcr.io/berriai
+    - ghcr.io/berriai/*
   destinations:
     - server: https://kubernetes.default.svc
       namespace: monitoring
@@ -23,6 +25,8 @@ spec:
     # kube-prometheus-stack puts scrape Services for CoreDNS/kubelet in kube-system.
     - server: https://kubernetes.default.svc
       namespace: kube-system
+    - server: https://kubernetes.default.svc
+      namespace: litellm
   clusterResourceWhitelist:
     - group: "*"
       kind: "*"
