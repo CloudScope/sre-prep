@@ -8,17 +8,23 @@ image:
   tag: "main-v1.61.1"
   pullPolicy: IfNotPresent
 
-# Stateless Mode: Completely disable PostgreSQL subchart and standalone DB
+# Stateful Mode: Connect to dedicated PostgreSQL database for UI, virtual keys, and spend tracking
 db:
   deployStandalone: false
-  useExisting: false
+  useExisting: true
+  endpoint: "litellm-postgresql.litellm.svc:5432"
+  database: litellm
+  secret:
+    name: litellm-db-credentials
+    usernameKey: username
+    passwordKey: password
 
 postgresql:
   enabled: false
 
-# Disable Prisma DB migration jobs since we are running stateless
+# Enable Prisma DB migration job to automatically initialize LiteLLM tables
 migrationJob:
-  enabled: false
+  enabled: true
 
 # Master API key for proxy administration and client access in lab
 masterkey: "sk-litellm-master-key-lab"
