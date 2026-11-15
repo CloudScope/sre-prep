@@ -12,7 +12,7 @@ image:
 command: ["/bin/sh", "-c"]
 args:
   - |
-    find / -name "page-*.js" -path "*/_next/static/chunks/app/*" -exec sed -i 's/Default Organization/Dhilabs/g' {} + 2>/dev/null || true
+    find /app /usr/lib -type f \( -name "*.js" -o -name "*.html" -o -name "*.json" \) -exec sed -i 's/Default Organization/Dhilabs/g' {} + 2>/dev/null || true
     exec /usr/bin/litellm --config /etc/litellm/config.yaml
 
 # Stateful Mode: Connect to dedicated PostgreSQL database for UI, virtual keys, and spend tracking
