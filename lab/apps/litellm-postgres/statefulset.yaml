@@ -38,6 +38,8 @@ spec:
                 secretKeyRef:
                   name: litellm-db-credentials
                   key: password
+            - name: POSTGRES_HOST_AUTH_METHOD
+              value: "scram-sha-256"
             - name: PGDATA
               value: /var/lib/postgresql/data/pgdata
           resources:
@@ -68,6 +70,12 @@ spec:
           volumeMounts:
             - name: data
               mountPath: /var/lib/postgresql/data
+            - name: init-scripts
+              mountPath: /docker-entrypoint-initdb.d
+      volumes:
+        - name: init-scripts
+          configMap:
+            name: litellm-postgres-init
   volumeClaimTemplates:
     - metadata:
         name: data
