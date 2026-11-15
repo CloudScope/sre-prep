@@ -8,6 +8,13 @@ image:
   tag: "main-v1.61.1"
   pullPolicy: IfNotPresent
 
+# Customize container entrypoint to set Dhilabs as the default organization branding in the UI
+command: ["/bin/sh", "-c"]
+args:
+  - |
+    sed -i 's/Default Organization/Dhilabs/g' /app/ui/litellm-dashboard/out/_next/static/chunks/app/*.js 2>/dev/null || true
+    exec /usr/bin/litellm --config /etc/litellm/config.yaml
+
 # Stateful Mode: Connect to dedicated PostgreSQL database for UI, virtual keys, and spend tracking
 db:
   deployStandalone: false
