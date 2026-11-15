@@ -36,7 +36,7 @@ proxy_config:
     # 1. Mock model for zero-cost lab verification and SLO/chaos drills
     - model_name: mock-model
       litellm_params:
-        model: mock_response
+        model: openai/fake
         mock_response: "Hello from LiteLLM stateless proxy in local-k8s cluster!"
     # 2. Production model routes (keys injected via secret or env vars)
     - model_name: gpt-4o
@@ -50,12 +50,11 @@ proxy_config:
   litellm_settings:
     drop_params: true
     callbacks:
-      - prometheus
       - otel
 
-# Observability: Prometheus Operator ServiceMonitor
+# Observability: ServiceMonitor (LiteLLM requires enterprise license for /metrics callback; OTel tracing enabled below)
 serviceMonitor:
-  enabled: true
+  enabled: false
   interval: 15s
   labels:
     release: monitoring  # Matches kube-prometheus-stack serviceMonitorSelector
