@@ -8,9 +8,13 @@ image:
   tag: "main-v1.61.1"
   pullPolicy: IfNotPresent
 
-# Stateless Mode: No PostgreSQL database needed
+# Stateless Mode: Completely disable PostgreSQL subchart and standalone DB
 db:
   deployStandalone: false
+  useExisting: false
+
+postgresql:
+  enabled: false
 
 # Disable Prisma DB migration jobs since we are running stateless
 migrationJob:
