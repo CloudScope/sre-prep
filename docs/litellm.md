@@ -41,9 +41,10 @@ kubectl -n litellm port-forward svc/litellm 4000:4000
 
 ### 2. Test Health Endpoint
 ```bash
-curl -i http://localhost:4000/health/liveness
+curl -i http://localhost:4000/health/liveliness
+curl -i http://localhost:4000/health/readiness
 ```
-*Expected response: HTTP 200 `{"status": "alive"}`*
+*Expected response: HTTP 200 `"I'm alive!"` / `{"status": "healthy"}`*
 
 ### 3. Test Zero-Cost Mock Model
 You can test the entire AI gateway pipeline without providing real API keys:
