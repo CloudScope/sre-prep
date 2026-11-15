@@ -12,6 +12,7 @@ image:
 command: ["/bin/sh", "-c"]
 args:
   - |
+    sed -i 's/Default Organization/Dhilabs/g' /app/litellm/proxy/_experimental/out/_next/static/chunks/app/*.js 2>/dev/null || true
     sed -i 's/Default Organization/Dhilabs/g' /app/ui/litellm-dashboard/out/_next/static/chunks/app/*.js 2>/dev/null || true
     exec /usr/bin/litellm --config /etc/litellm/config.yaml
 
